@@ -13,7 +13,7 @@ Please proceed with the following steps to ensure a smooth development process:
     -   To isolate your environment, please create a new git worktree.
     -   Execute the following command to create the worktree and branch simultaneously:
         ```bash
-        git worktree add ../<project_root_name>-<branch_name> -b <branch_name>
+        git worktree add worktrees/<branch_name> -b <branch_name>
         ```
     -   If worktrees are not feasible in the current environment, please checkout the branch in the current directory as a fallback.
 
