@@ -1,0 +1,10 @@
+description = "Remove a specified git worktree."
+prompt = """
+You are tasked with removing a git worktree.
+
+Please remove the worktree located at the path provided in `{{args}}`.
+
+Use the command: `git worktree remove {{args}}`
+
+Important: If the worktree has uncommitted changes, the command will fail. In such cases, you might need to commit, stash, or use the `-f` option (force remove) if the user explicitly instructs it.
+"""
