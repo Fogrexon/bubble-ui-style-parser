@@ -28,5 +28,8 @@ api-docs/
 
 docs/
 coverage/
-llm-workspace/\n# Task definition file\nTASK.md
-worktrees/
+
+# Gemini CLI workspace
+/llm-workspace/
+/worktrees/
+**/TASK.md
