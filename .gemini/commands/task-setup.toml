@@ -1,0 +1,25 @@
+description = "Set up a worktree environment for a new task and create a TASK.md file."
+prompt = """
+You are tasked with setting up a development environment for the following task:
+
+{{args}}
+
+Please proceed with the following steps:
+
+1.  **Determine Branch Name**:
+    -   Choose a specific and concise branch name based on the task description (e.g., `feature/cool-new-thing` or `fix/annoying-bug`).
+
+2.  **Create Branch & Worktree**:
+    -   To isolate your environment, please create a new git worktree inside the `worktrees` directory.
+    -   Execute the following command to create the worktree and branch simultaneously:
+        ```bash
+        git worktree add worktrees/<branch_name> -b <branch_name>
+        ```
+    -   If worktrees are not feasible in the current environment, please checkout the branch in the current directory as a fallback.
+
+3.  **Create Task Definition**:
+    -   Navigate to the new worktree directory.
+    -   Create a `TASK.md` file in the root of the worktree.
+    -   In `TASK.md`, write a clear and detailed description of the task that needs to be implemented, based on the user's request above. This file will be used by the `task-impl` command.
+    -   Finally, inform the user about the created worktree directory path.
+"""

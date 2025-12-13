@@ -1,4 +1,3 @@
-/* eslint-disable no-use-before-define */
 import type { RangeString, SpeciallyFormattedString } from './util';
 
 export type StaticPrimitiveToken = 'length' | 'percentage' | 'integer' | 'color' | 'image';

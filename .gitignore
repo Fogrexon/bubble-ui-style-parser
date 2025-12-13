@@ -28,4 +28,5 @@ api-docs/
 
 docs/
 coverage/
-llm-workspace/
+llm-workspace/\n# Task definition file\nTASK.md
+worktrees/
