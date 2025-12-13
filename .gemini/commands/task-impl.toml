@@ -1,0 +1,16 @@
+description = "Implement a specified task by creating a new branch and git worktree."
+prompt = """
+You are tasked with implementing a feature or fix based on the following description:
+
+{{args}}
+
+Please follow these steps:
+1.  **Determine Branch Name**: specific and concise branch name based on the task description (e.g., `feature/cool-new-thing` or `fix/annoying-bug`).
+2.  **Create Branch & Worktree**:
+    -   Create a new branch with the determined name.
+    -   Create a git worktree for this branch in a sibling directory named `<project_root_name>-<branch_name>`.
+    -   If worktrees are not feasible, just checkout the branch in the current directory.
+3.  **Implement**:
+    -   Once inside the new environment (worktree or branch), plan and implement the requested changes.
+    -   Follow all project conventions and instructions.
+"""
