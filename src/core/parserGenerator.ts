@@ -15,7 +15,15 @@ import { tokenizer } from './tokenizer';
 const { tester: repetitionTypeTester, getRange: repetitionTypeRange } =
   getRangeStringProcessor('repetition');
 
+/**
+ * Custom error class for parsing failures.
+ * Thrown when the parser encounters a syntax that doesn't match the grammar rules
+ * or when the grammar definition itself is invalid.
+ */
 export class ParseError extends Error {
+  /**
+   * @param message The error message.
+   */
   constructor(message: string) {
     super(message);
     this.name = 'ParseError';
@@ -23,17 +31,42 @@ export class ParseError extends Error {
   }
 }
 
+/**
+ * Represents a high-level style parser function.
+ * It takes a string value and returns the root of the parsed Abstract Syntax Tree (AST).
+ *
+ * @param value The input string to parse.
+ * @returns The root `ASTBranch` of the parsed tree.
+ * @throws {ParseError} If the input string cannot be fully parsed according to the grammar.
+ */
 export type StyleParser = (value: string) => ASTBranch;
+
+/**
+ * Represents an internal parser function used by the parser generator.
+ * It operates on an array of tokens and tries to match a grammar rule starting from a specific index.
+ *
+ * @param tokens The array of tokens to parse.
+ * @param currentIndex The index in the token array to start parsing from.
+ * @returns An object containing the parsed AST nodes and the number of tokens consumed, or `null` if parsing fails.
+ */
 export type InternalStyleParser = (
   tokens: string[],
   currentIndex: number
 ) => { asts: ASTNode[]; consumed: number } | null;
 
+/**
+ * Internal helper type to pair a grammar rule's ID with its corresponding internal parser.
+ */
 type ASTPair = {
   id: string;
   parser: InternalStyleParser;
 };
 
+/**
+ * Creates an array of `ASTPair` objects for a given composite grammar rule.
+ * @param rule The grammar rule (sequence, choice, or unordered).
+ * @returns An array of `ASTPair`s.
+ */
 const getParserPairArray = (
   rule: SequenceDefinition | ChoiceDefinition | UnorderedDefinition
 ): ASTPair[] =>
@@ -42,6 +75,11 @@ const getParserPairArray = (
     parser: internalParserGenerator(element),
   }));
 
+/**
+ * Generates an internal parser for a primitive token definition.
+ * @param rule The primitive token definition.
+ * @returns An `InternalStyleParser` for the primitive token.
+ */
 const primitiveParserGenerator = (rule: PrimitiveTokenDefinition): InternalStyleParser => {
   const atomicParser = atomicTokenParserSelector(rule.tokenType);
   return (tokens, currentIndex) => {
@@ -67,6 +105,11 @@ const primitiveParserGenerator = (rule: PrimitiveTokenDefinition): InternalStyle
   };
 };
 
+/**
+ * Generates an internal parser for a sequence of grammar rules.
+ * @param rule The sequence definition.
+ * @returns An `InternalStyleParser` for the sequence.
+ */
 const sequenceParserGenerator = (rule: SequenceDefinition): InternalStyleParser => {
   const astPairs = getParserPairArray(rule);
 
@@ -107,6 +150,11 @@ const sequenceParserGenerator = (rule: SequenceDefinition): InternalStyleParser 
   };
 };
 
+/**
+ * Generates an internal parser for an unordered set of grammar rules.
+ * @param rule The unordered definition.
+ * @returns An `InternalStyleParser` for the unordered set.
+ */
 const unorderedParserGenerator = (rule: UnorderedDefinition): InternalStyleParser => {
   const astPairs = getParserPairArray(rule);
 
@@ -153,6 +201,11 @@ const unorderedParserGenerator = (rule: UnorderedDefinition): InternalStyleParse
   };
 };
 
+/**
+ * Generates an internal parser for a choice of grammar rules.
+ * @param rule The choice definition.
+ * @returns An `InternalStyleParser` for the choice.
+ */
 const choiceParserGenerator = (rule: ChoiceDefinition): InternalStyleParser => {
   const astPairs = getParserPairArray(rule);
 
@@ -180,6 +233,11 @@ const choiceParserGenerator = (rule: ChoiceDefinition): InternalStyleParser => {
   };
 };
 
+/**
+ * Generates an internal parser for a repetition of a grammar rule.
+ * @param rule The repetition definition.
+ * @returns An `InternalStyleParser` for the repetition.
+ */
 const repetitionParserGenerator = (rule: RepetitionDefinition): InternalStyleParser => {
   const [min, max] = rule.type === 'repetition' ? [0, Infinity] : repetitionTypeRange(rule.type);
   if (min > max) {
@@ -232,6 +290,11 @@ const repetitionParserGenerator = (rule: RepetitionDefinition): InternalStylePar
   };
 };
 
+/**
+ * Generates an internal parser for a labeled grammar rule.
+ * @param rule The label definition.
+ * @returns An `InternalStyleParser` for the labeled rule.
+ */
 const labelParserGenerator = (rule: LabelDefinition): InternalStyleParser => {
   const innerParser = internalParserGenerator(rule.rule);
   return (tokens, currentIndex) => {
@@ -252,6 +315,12 @@ const labelParserGenerator = (rule: LabelDefinition): InternalStyleParser => {
   };
 };
 
+/**
+ * Recursively generates an internal parser based on the type of the grammar rule.
+ * This is the main dispatcher for creating the parsing logic.
+ * @param rule The grammar rule to generate a parser for.
+ * @returns The corresponding `InternalStyleParser`.
+ */
 const internalParserGenerator = (rule: GrammarRule): InternalStyleParser => {
   switch (rule.type) {
     case 'primitive':
@@ -277,6 +346,18 @@ const internalParserGenerator = (rule: GrammarRule): InternalStyleParser => {
   }
 };
 
+/**
+ * Creates a high-level style parser function from a grammar rule definition.
+ * This is the main entry point for creating a new parser.
+ *
+ * @param rule The root `GrammarRule` that defines the language to be parsed.
+ * @returns A `StyleParser` function that takes a string and returns a parsed AST.
+ * @example
+ * const grammar = { type: 'primitive', tokenType: 'length', id: 'my-length' };
+ * const lengthParser = parserGenerator(grammar);
+ * const ast = lengthParser('10px');
+ * // ast would be: { type: 'branch', id: 'root', children: [...] }
+ */
 export const parserGenerator = (rule: GrammarRule): StyleParser => {
   const internalParser = internalParserGenerator(rule);
 
