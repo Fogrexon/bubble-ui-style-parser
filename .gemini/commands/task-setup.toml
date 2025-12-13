@@ -21,4 +21,5 @@ Please proceed with the following steps:
     -   Navigate to the new worktree directory.
     -   Create a `TASK.md` file in the root of the worktree.
     -   In `TASK.md`, write a clear and detailed description of the task that needs to be implemented, based on the user's request above. This file will be used by the `task-impl` command.
+    -   Finally, inform the user about the created worktree directory path.
 """
