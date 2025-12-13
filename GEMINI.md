@@ -29,7 +29,7 @@ The development process is centered around GitHub Issues and Pull Requests.
      - Follow the project's Issue Template located at `.github/ISSUE_TEMPLATE/issue_template.md` (Overview, Problem, Request).
      - Write descriptions from the perspective of the **issue creator**. Use appropriate politeness but avoid being overly humble.
 2. Make changes to the source code.
-3. Run tests to ensure functionality.
+3. Run tests to ensure functionality. For single, non-interactive test runs, use the `npm run test:once` command.
 4. Update documentation if needed. Regular documentation should be placed in the `docs/` directory. API documentation is automatically generated from the source code and does not require manual creation.
 5. Submit a Pull Request linked to the Issue.
    - **PR Creation Guidelines:**
