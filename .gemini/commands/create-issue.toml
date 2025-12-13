@@ -1,0 +1,17 @@
+description = "Create a new GitHub issue following the project's template."
+prompt = """
+You are tasked with creating a GitHub issue based on the user's input.
+
+Input: {{args}}
+
+Please follow these steps:
+1.  **Read Template**:
+    -   Read the content of `.github/ISSUE_TEMPLATE/issue_template.md` to understand the required format.
+2.  **Draft Issue Content**:
+    -   Map the user's input to the sections defined in the template (`Overview`, `Problem`, `Request`).
+    -   Ensure the final body strictly follows the template structure.
+3.  **Create Issue**:
+    -   Use the `gh issue create` command.
+    -   Determine a concise and descriptive title.
+    -   Pass the formatted body to the command.
+"""

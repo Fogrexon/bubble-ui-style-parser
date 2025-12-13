@@ -1,0 +1,20 @@
+description = "Create a new GitHub pull request following the project's template."
+prompt = """
+You are tasked with creating a GitHub pull request for the current branch.
+
+Input: {{args}}
+
+Please follow these steps:
+1.  **Read Template**:
+    -   Read the content of `.github/pull_request_template.md` to understand the required format.
+2.  **Analyze Context**:
+    -   Use `git status`, `git log`, or `git diff` to understand the changes made in the current branch.
+3.  **Draft PR Content**:
+    -   Map the changes and user's input to the sections defined in the template (e.g., `Description`, `Changes`, `Related Issue`, `Checklist`).
+    -   Ensure the final body strictly follows the template structure.
+4.  **Create PR**:
+    -   Push the current branch if it hasn't been pushed yet (`git push -u origin <branch-name>`).
+    -   Use the `gh pr create` command.
+    -   Determine a concise and descriptive title.
+    -   Pass the formatted body to the command.
+"""
