@@ -18,7 +18,7 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     // setupFiles: './src/setupTests.js',
-    // include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'], // テスト対象ファイルのパターン
+    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'], // テスト対象ファイルのパターン
     coverage: {
       // カバレッジ設定
       provider: 'v8', // 'v8' または 'istanbul'
