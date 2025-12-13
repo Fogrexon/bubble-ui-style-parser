@@ -8,6 +8,13 @@ import type {
 import type { ASTLeaf, LeafApplicableToken } from './ast';
 import { getRangeStringProcessor } from './util';
 
+/**
+ * A helper function to create an `ASTLeaf` node.
+ * @param tokenType The type of the token for the leaf.
+ * @param value The value of the leaf node.
+ * @param unit The unit, if any (e.g., 'px').
+ * @returns A new `ASTLeaf` object.
+ */
 const createLeaf = <T extends string | number>(
   tokenType: LeafApplicableToken,
   value: T,
@@ -19,8 +26,19 @@ const createLeaf = <T extends string | number>(
   unit,
 });
 
+/**
+ * Defines the signature for a function that parses a single string token
+ * into an `ASTLeaf` of a specific type.
+ * @template T The expected type of the leaf's value (string or number).
+ * @param value The string token to parse.
+ * @returns An `ASTLeaf` if parsing is successful, otherwise `null`.
+ */
 export type PrimitiveTokenParser<T extends string | number> = (value: string) => ASTLeaf<T> | null;
 
+/**
+ * Parses a token into a length `ASTLeaf`. It expects a number followed by an optional unit.
+ * It excludes percentage values.
+ */
 const LengthTokenParser: PrimitiveTokenParser<number> = (value) => {
   const s = value.toLowerCase().trim();
   const unit = s.match(/(px|%|em|rem|vw|vh|vmin|vmax|cm|mm|in|pt|pc)$/);
@@ -32,6 +50,9 @@ const LengthTokenParser: PrimitiveTokenParser<number> = (value) => {
   return createLeaf('length', numberValue, unitValue);
 };
 
+/**
+ * Parses a token into a percentage `ASTLeaf`. It expects a number followed by a '%' sign.
+ */
 const PercentageTokenParser: PrimitiveTokenParser<number> = (value) => {
   const s = value.toLowerCase().trim();
   const unit = s.match(/%$/);
@@ -42,6 +63,9 @@ const PercentageTokenParser: PrimitiveTokenParser<number> = (value) => {
   return createLeaf('percentage', numberValue, '%');
 };
 
+/**
+ * Parses a token into an integer `ASTLeaf`.
+ */
 const IntegerTokenParser: PrimitiveTokenParser<number> = (value) => {
   const number = value.match(/-?\d+/);
   if (!number) return null;
@@ -50,6 +74,9 @@ const IntegerTokenParser: PrimitiveTokenParser<number> = (value) => {
   return createLeaf('integer', numberValue);
 };
 
+/**
+ * Parses a token into a color `ASTLeaf`. It recognizes color keywords, hex, RGB(A), and HSL(A) values.
+ */
 const ColorTokenParser: PrimitiveTokenParser<string> = (value) => {
   const s = value.toLowerCase().trim();
   const commonColors = [
@@ -80,10 +107,13 @@ const ColorTokenParser: PrimitiveTokenParser<string> = (value) => {
     !/^rgba?\s*\((\s*\d+%?\s*,\s*){2}\s*\d+%?\s*(,\s*(0|1|0?\.\d+)\s*)?\)$/.test(s) &&
     !/^hsla?\s*\((\s*\d+\s*,\s*){2}\s*\d+%\s*(,\s*(0|1|0?\.\d+)\s*)?\)$/.test(s)
   )
-    return null; // 簡単なチェック
+    return null; // Basic check, not exhaustive.
   return createLeaf('color', s);
 };
 
+/**
+ * Parses a token into an image `ASTLeaf`. It primarily looks for `url(...)` syntax.
+ */
 const ImageTokenParser: PrimitiveTokenParser<string> = (value) => {
   const s = value.toLowerCase();
   const extractedUrl = s.match(/url\(([^)]+)\)/);
@@ -91,8 +121,12 @@ const ImageTokenParser: PrimitiveTokenParser<string> = (value) => {
   return createLeaf('image', extractedUrl[1].replace(/['"]/g, ''));
 };
 
-// dynamic tokens
-
+/**
+ * Defines the signature for a function that generates a `PrimitiveTokenParser`.
+ * This is used for creating parsers for dynamic tokens like `length<0,10>` or `keyword<A,B>`.
+ * @template T The specific subtype of `DynamicPrimitiveToken`.
+ * @template U The value type (string or number) of the resulting AST leaf.
+ */
 export type DynamicTokenParserGenerator<
   T extends DynamicPrimitiveToken,
   U extends string | number,
@@ -101,6 +135,9 @@ export type DynamicTokenParserGenerator<
 const { tester: isLimitedLengthToken, getRange: getLimitedLengthTokenRange } =
   getRangeStringProcessor('length');
 
+/**
+ * Generates a parser for length tokens with min/max constraints (e.g., `length<0,100>`).
+ */
 const LimitedLengthTokenParserGenerator: DynamicTokenParserGenerator<LimitedLengthToken, number> = (
   tokenType
 ) => {
@@ -119,8 +156,15 @@ const LimitedLengthTokenParserGenerator: DynamicTokenParserGenerator<LimitedLeng
   };
 };
 
+/**
+ * Type guard to check if a string is a `KeywordToken` definition.
+ */
 const isKeywordToken = (value: string): value is KeywordToken =>
   value.startsWith('keyword<') && value.endsWith('>');
+
+/**
+ * Generates a parser for a specific set of keywords (e.g., `keyword<auto,none>`).
+ */
 const KeywordTokenParserGenerator: DynamicTokenParserGenerator<KeywordToken, string> = (
   tokenType
 ) => {
@@ -135,6 +179,9 @@ const KeywordTokenParserGenerator: DynamicTokenParserGenerator<KeywordToken, str
   };
 };
 
+/**
+ * Maps primitive token types to their corresponding parsed value types.
+ */
 type PrimitiveTokenParsedType = {
   length: number;
   color: string;
@@ -145,6 +192,9 @@ type PrimitiveTokenParsedType = {
   keyword: string;
 };
 
+/**
+ * A type mapping static token types to their respective parser functions.
+ */
 type PrimitiveTokenParsers = {
   [K in Exclude<StaticPrimitiveToken, 'keyword'>]: PrimitiveTokenParser<
     PrimitiveTokenParsedType[K]
@@ -152,7 +202,8 @@ type PrimitiveTokenParsers = {
 };
 
 /**
- * parsers of primitive tokens
+ * A collection of parsers for static primitive token types.
+ * These parsers handle tokens that have a fixed, predefined meaning.
  */
 export const atomicTokenParsers: PrimitiveTokenParsers = {
   length: LengthTokenParser,
@@ -162,6 +213,13 @@ export const atomicTokenParsers: PrimitiveTokenParsers = {
   image: ImageTokenParser,
 };
 
+/**
+ * Selects and returns the appropriate atomic token parser for a given primitive token type.
+ * It handles both static and dynamic primitive tokens.
+ *
+ * @param tokenType The `PrimitiveToken` type (e.g., 'length', 'keyword<auto,none>').
+ * @returns The corresponding `PrimitiveTokenParser`, or `null` if the token type is not supported.
+ */
 export const atomicTokenParserSelector = (tokenType: PrimitiveToken) => {
   if (isLimitedLengthToken(tokenType)) {
     return LimitedLengthTokenParserGenerator(tokenType);
@@ -171,5 +229,9 @@ export const atomicTokenParserSelector = (tokenType: PrimitiveToken) => {
     return KeywordTokenParserGenerator(tokenType);
   }
 
-  return atomicTokenParsers[tokenType] || null;
+  // After the guards, tokenType must be a StaticPrimitiveToken.
+  // Using 'as any' here because TypeScript cannot infer the narrowed type
+  // across the dynamic token checks.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (atomicTokenParsers as any)[tokenType] || null;
 };

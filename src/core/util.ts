@@ -1,12 +1,38 @@
+/**
+ * Represents a string that defines a numeric range.
+ * @template T A string literal that serves as the prefix (e.g., 'length').
+ * @example
+ * // A length between 0 and 100
+ * type LimitedLength = RangeString<'length'>; // "length<0,100>"
+ */
 export type RangeString<T extends string> = `${T}<${number | '-∞'},${number | '∞'}>`;
 
-type IsRangeStringType<T extends string> = (value: string) => value is RangeString<T>;
-type GetRangeStringRangeType<T extends string> = (value: RangeString<T>) => [number, number];
-type RangeStringProcessor<T extends string> = {
+/**
+ * A type for a function that checks if a string conforms to the `RangeString` format.
+ */
+export type IsRangeStringType<T extends string> = (value: string) => value is RangeString<T>;
+/**
+ * A type for a function that extracts the [min, max] tuple from a `RangeString`.
+ */
+export type GetRangeStringRangeType<T extends string> = (value: RangeString<T>) => [number, number];
+/**
+ * An object containing a `tester` and a `getRange` function for a specific `RangeString` type.
+ */
+export type RangeStringProcessor<T extends string> = {
   tester: IsRangeStringType<T>;
   getRange: GetRangeStringRangeType<T>;
 };
 
+/**
+ * Creates a processor object for handling range-formatted strings (e.g., "length<0,100>").
+ * The returned object contains a `tester` function to validate the format and a
+ * `getRange` function to extract the minimum and maximum values.
+ *
+ * @template T The base string prefix for the range format (e.g., 'length').
+ * @param baseString The prefix to use for the range string.
+ * @returns A `RangeStringProcessor<T>` object with `tester` and `getRange` methods.
+ * @throws {Error} If the format is invalid or if min > max.
+ */
 export const getRangeStringProcessor = <T extends string>(baseString: T) => {
   const regex = new RegExp(`^${baseString}<(-?\\d+|-∞),(-?\\d+|\\+?∞)>$`);
   const processor: RangeStringProcessor<T> = {
@@ -24,10 +50,10 @@ export const getRangeStringProcessor = <T extends string>(baseString: T) => {
 };
 
 /**
- * 文字列の配列を、指定された区切り文字で結合する型
- * @template T - 文字列の配列 (e.g., ['a', 'b', 'c'])
- * @template D - 区切り文字 (e.g., ',')
- * @returns 結合された文字列 (e.g., 'a,b,c')
+ * A utility type that joins an array of strings with a given delimiter.
+ * @template T An array of strings (e.g., `['a', 'b', 'c']`).
+ * @template D The delimiter string (e.g., `,`).
+ * @returns The joined string (e.g., `'a,b,c'`).
  */
 export type Join<T extends readonly string[], D extends string> = T extends []
   ? ''
@@ -40,9 +66,14 @@ export type Join<T extends readonly string[], D extends string> = T extends []
       : string;
 
 /**
- * keyword<type1,type2,...> の形式の文字列型を生成する
- * @template TKeyword - 接頭辞となるキーワード
- * @template TTypes - ★★★ 型名を表す「文字列の配列」 ★★★
+ * Creates a specially formatted string type, typically for defining dynamic tokens.
+ * It combines a keyword prefix with a comma-separated list of types.
+ *
+ * @template TKeyword The prefix keyword.
+ * @template TTypes An array of string literals for the types.
+ * @example
+ * // Creates the type "keyword<type1,type2>"
+ * type MyKeyword = SpeciallyFormattedString<'keyword', ['type1', 'type2']>;
  */
 export type SpeciallyFormattedString<
   TKeyword extends string,
